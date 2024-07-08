@@ -2,138 +2,102 @@ package cmd
 
 import (
 	"context"
-	"fmt"
-	"io"
-	"strings"
-
-	"github.com/charmbracelet/bubbles/list"
-	tea "github.com/charmbracelet/bubbletea"
-	"github.com/charmbracelet/lipgloss"
+	"github.com/alecthomas/kingpin/v2"
+	"github.com/hashicorp/go-hclog"
 	"github.com/pkg/errors"
+	"os"
+
+	"github.com/cligpt/shai/config"
+	"github.com/cligpt/shai/gpt"
+	"github.com/cligpt/shai/term"
 )
 
 const (
-	defaultWidth = 20
-	listHeight   = 14
+	logName    = "shai"
+	routineNum = -1
 )
 
-// nolint:mnd
 var (
-	helpStyle         = list.DefaultStyles().HelpStyle.PaddingLeft(4).PaddingBottom(1)
-	itemStyle         = lipgloss.NewStyle().PaddingLeft(4)
-	paginationStyle   = list.DefaultStyles().PaginationStyle.PaddingLeft(4)
-	quitTextStyle     = lipgloss.NewStyle().Margin(1, 0, 2, 4)
-	selectedItemStyle = lipgloss.NewStyle().PaddingLeft(2).Foreground(lipgloss.Color("170"))
-	titleStyle        = lipgloss.NewStyle().MarginLeft(2)
+	app      = kingpin.New("shai", "shell with ai").Version(config.Version + "-build-" + config.Build)
+	logLevel = app.Flag("log-level", "Log level (DEBUG|INFO|WARN|ERROR)").Default("WARN").String()
 )
 
-type item string
-type itemDelegate struct{}
+func Run(ctx context.Context) error {
+	kingpin.MustParse(app.Parse(os.Args[1:]))
 
-type model struct {
-	list     list.Model
-	choice   string
-	quitting bool
-}
-
-func Run(_ context.Context) error {
-	items := []list.Item{
-		item("artifactgpt"),
-		item("buildgpt"),
-		item("codegpt"),
-		item("gitgpt"),
-		item("lintgpt"),
-		item("metalgpt"),
+	logger, err := initLogger(ctx, *logLevel)
+	if err != nil {
+		return errors.Wrap(err, "failed to init logger")
 	}
 
-	l := list.New(items, &itemDelegate{}, defaultWidth, listHeight)
-	l.Title = "What kind of gpt would you need to use?👇"
-	l.SetShowStatusBar(false)
-	l.SetFilteringEnabled(false)
-	l.Styles.Title = titleStyle
-	l.Styles.PaginationStyle = paginationStyle
-	l.Styles.HelpStyle = helpStyle
+	c, err := initConfig(ctx, logger)
+	if err != nil {
+		return errors.Wrap(err, "failed to init config")
+	}
 
-	m := model{list: l}
+	t, err := initTerm(ctx, logger, c)
+	if err != nil {
+		return errors.Wrap(err, "failed to init term")
+	}
 
-	if _, err := tea.NewProgram(&m).Run(); err != nil {
-		return errors.Wrap(err, "failed to new program")
+	g, err := initGpt(ctx, logger, c)
+	if err != nil {
+		return errors.Wrap(err, "failed to init gpt")
+	}
+
+	if err := runTerm(ctx, logger, t, g); err != nil {
+		return errors.Wrap(err, "failed to run term")
 	}
 
 	return nil
 }
 
-func (i item) FilterValue() string {
-	return ""
+func initLogger(_ context.Context, level string) (hclog.Logger, error) {
+	return hclog.New(&hclog.LoggerOptions{
+		Name:  logName,
+		Level: hclog.LevelFromString(level),
+	}), nil
 }
 
-func (d *itemDelegate) Height() int {
-	return 1
+func initConfig(_ context.Context, _ hclog.Logger) (*config.Config, error) {
+	c := config.New()
+	return c, nil
 }
 
-func (d *itemDelegate) Spacing() int {
-	return 0
+func initTerm(ctx context.Context, logger hclog.Logger, _ *config.Config) (term.Term, error) {
+	c := term.DefaultConfig()
+	if c == nil {
+		return nil, errors.New("failed to config")
+	}
+
+	c.Logger = logger
+
+	return term.New(ctx, c), nil
 }
 
-func (d *itemDelegate) Update(_ tea.Msg, _ *list.Model) tea.Cmd {
+func initGpt(ctx context.Context, logger hclog.Logger, _ *config.Config) (gpt.Gpt, error) {
+	c := gpt.DefaultConfig()
+	if c == nil {
+		return nil, errors.New("failed to config")
+	}
+
+	c.Logger = logger
+
+	return gpt.New(ctx, c), nil
+}
+
+func runTerm(ctx context.Context, _ hclog.Logger, _term term.Term, _gpt gpt.Gpt) error {
+	if err := _term.Init(ctx, _gpt); err != nil {
+		return errors.New("failed to init")
+	}
+
+	defer func(_term term.Term, ctx context.Context) {
+		_ = _term.Deinit(ctx)
+	}(_term, ctx)
+
+	if err := _term.Run(ctx); err != nil {
+		return errors.Wrap(err, "failed to run")
+	}
+
 	return nil
-}
-
-// nolint:gocritic
-func (d *itemDelegate) Render(w io.Writer, m list.Model, index int, listItem list.Item) {
-	i, ok := listItem.(item)
-	if !ok {
-		return
-	}
-
-	str := fmt.Sprintf("%d. %s", index+1, i)
-
-	fn := itemStyle.Render
-	if index == m.Index() {
-		fn = func(s ...string) string {
-			return selectedItemStyle.Render("> " + strings.Join(s, " "))
-		}
-	}
-
-	_, _ = fmt.Fprint(w, fn(str))
-}
-
-func (m *model) Init() tea.Cmd {
-	return nil
-}
-
-func (m *model) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
-	switch msg := msg.(type) {
-	case tea.WindowSizeMsg:
-		m.list.SetWidth(msg.Width)
-		return m, nil
-
-	case tea.KeyMsg:
-		switch keypress := msg.String(); keypress {
-		case "q", "ctrl+c":
-			m.quitting = true
-			return m, tea.Quit
-
-		case "enter":
-			i, ok := m.list.SelectedItem().(item)
-			if ok {
-				m.choice = string(i)
-			}
-			return m, tea.Quit
-		}
-	}
-
-	var cmd tea.Cmd
-	m.list, cmd = m.list.Update(msg)
-	return m, cmd
-}
-
-func (m *model) View() string {
-	if m.choice != "" {
-		return quitTextStyle.Render(fmt.Sprintf("%s selected!🚀", m.choice))
-	}
-	if m.quitting {
-		return quitTextStyle.Render("See you next time!💖")
-	}
-	return "\n" + m.list.View()
 }

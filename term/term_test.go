@@ -7,5 +7,6 @@ import (
 )
 
 func TestTerm(t *testing.T) {
+	// TBD: FIXME
 	assert.Equal(t, nil, nil)
 }

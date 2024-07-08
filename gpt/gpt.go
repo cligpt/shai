@@ -4,8 +4,6 @@ import (
 	"context"
 
 	"github.com/hashicorp/go-hclog"
-
-	"github.com/cligpt/shai/config"
 )
 
 type Gpt interface {
@@ -15,7 +13,6 @@ type Gpt interface {
 }
 
 type Config struct {
-	Config config.Config
 	Logger hclog.Logger
 }
 
