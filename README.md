@@ -10,7 +10,7 @@
 
 ## Introduction
 
-*shai* is the shell with AI written in Go.
+*shai* is a shell with AI written in Go.
 
 
 
@@ -29,18 +29,18 @@ make build
 
 
 
-## Run
-
-```bash
-./bin/shai
-```
-
-
-
 ## Usage
 
 ```
-TBD
+usage: shai [<flags>]
+
+shell with ai
+
+
+Flags:
+  --[no-]help         Show context-sensitive help (also try --help-long and --help-man).
+  --[no-]version      Show application version.
+  --log-level="WARN"  Log level (DEBUG|INFO|WARN|ERROR)
 ```
 
 
