@@ -2,10 +2,11 @@ package cmd
 
 import (
 	"context"
+	"os"
+
 	"github.com/alecthomas/kingpin/v2"
 	"github.com/hashicorp/go-hclog"
 	"github.com/pkg/errors"
-	"os"
 
 	"github.com/cligpt/shai/config"
 	"github.com/cligpt/shai/gpt"
