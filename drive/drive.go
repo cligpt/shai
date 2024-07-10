@@ -2,8 +2,16 @@ package drive
 
 import (
 	"context"
+	"math"
+	"strconv"
 
 	"github.com/hashicorp/go-hclog"
+	"github.com/pkg/errors"
+	"google.golang.org/grpc"
+	"google.golang.org/grpc/credentials/insecure"
+
+	"github.com/cligpt/shai/config"
+	proto "github.com/cligpt/shai/drive/proto"
 )
 
 type Drive interface {
@@ -14,10 +22,13 @@ type Drive interface {
 
 type Config struct {
 	Logger hclog.Logger
+	Config config.Config
 }
 
 type drive struct {
-	cfg *Config
+	cfg    *Config
+	client proto.DriveProtoClient
+	conn   *grpc.ClientConn
 }
 
 func New(_ context.Context, cfg *Config) Drive {
@@ -31,11 +42,25 @@ func DefaultConfig() *Config {
 }
 
 func (d *drive) Init(_ context.Context) error {
+	var err error
+
+	host := d.cfg.Config.Host
+	port := d.cfg.Config.Port
+
+	d.conn, err = grpc.NewClient(host+":"+strconv.Itoa(port),
+		grpc.WithTransportCredentials(insecure.NewCredentials()),
+		grpc.WithDefaultCallOptions(grpc.MaxCallRecvMsgSize(math.MaxInt32), grpc.MaxCallSendMsgSize(math.MaxInt32)))
+	if err != nil {
+		return errors.Wrap(err, "failed to dial")
+	}
+
+	d.client = proto.NewDriveProtoClient(d.conn)
+
 	return nil
 }
 
 func (d *drive) Deinit(_ context.Context) error {
-	return nil
+	return d.conn.Close()
 }
 
 func (d *drive) Run(_ context.Context) error {

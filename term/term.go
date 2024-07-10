@@ -12,6 +12,8 @@ import (
 	"github.com/hashicorp/go-hclog"
 	"github.com/pkg/errors"
 
+	"github.com/cligpt/shai/config"
+	"github.com/cligpt/shai/drive"
 	"github.com/cligpt/shai/gpt"
 )
 
@@ -31,13 +33,16 @@ var (
 )
 
 type Term interface {
-	Init(context.Context, gpt.Gpt) error
+	Init(context.Context) error
 	Deinit(context.Context) error
 	Run(context.Context) error
 }
 
 type Config struct {
 	Logger hclog.Logger
+	Config config.Config
+	Drive  drive.Drive
+	Gpt    gpt.Gpt
 }
 
 type term struct {
@@ -63,11 +68,22 @@ func DefaultConfig() *Config {
 	return &Config{}
 }
 
-func (t *term) Init(_ context.Context, _gpt gpt.Gpt) error {
+func (t *term) Init(ctx context.Context) error {
+	if err := t.cfg.Drive.Init(ctx); err != nil {
+		return errors.Wrap(err, "failed to init drive")
+	}
+
+	if err := t.cfg.Gpt.Init(ctx); err != nil {
+		return errors.Wrap(err, "failed to init gpt")
+	}
+
 	return nil
 }
 
-func (t *term) Deinit(_ context.Context) error {
+func (t *term) Deinit(ctx context.Context) error {
+	_ = t.cfg.Gpt.Deinit(ctx)
+	_ = t.cfg.Drive.Deinit(ctx)
+
 	return nil
 }
 

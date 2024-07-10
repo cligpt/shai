@@ -9,6 +9,7 @@ import (
 	"github.com/pkg/errors"
 
 	"github.com/cligpt/shai/config"
+	"github.com/cligpt/shai/drive"
 	"github.com/cligpt/shai/gpt"
 	"github.com/cligpt/shai/term"
 )
@@ -36,9 +37,9 @@ func Run(ctx context.Context) error {
 		return errors.Wrap(err, "failed to init config")
 	}
 
-	t, err := initTerm(ctx, logger, c)
+	d, err := initDrive(ctx, logger, c)
 	if err != nil {
-		return errors.Wrap(err, "failed to init term")
+		return errors.Wrap(err, "failed to init drive")
 	}
 
 	g, err := initGpt(ctx, logger, c)
@@ -46,7 +47,12 @@ func Run(ctx context.Context) error {
 		return errors.Wrap(err, "failed to init gpt")
 	}
 
-	if err := runTerm(ctx, logger, t, g); err != nil {
+	t, err := initTerm(ctx, logger, c, d, g)
+	if err != nil {
+		return errors.Wrap(err, "failed to init term")
+	}
+
+	if err := runTerm(ctx, logger, t); err != nil {
 		return errors.Wrap(err, "failed to run term")
 	}
 
@@ -65,30 +71,44 @@ func initConfig(_ context.Context, _ hclog.Logger) (*config.Config, error) {
 	return c, nil
 }
 
-func initTerm(ctx context.Context, logger hclog.Logger, _ *config.Config) (term.Term, error) {
-	c := term.DefaultConfig()
+func initDrive(ctx context.Context, logger hclog.Logger, cfg *config.Config) (drive.Drive, error) {
+	c := drive.DefaultConfig()
 	if c == nil {
 		return nil, errors.New("failed to config")
 	}
 
 	c.Logger = logger
+	c.Config = *cfg
 
-	return term.New(ctx, c), nil
+	return drive.New(ctx, c), nil
 }
 
-func initGpt(ctx context.Context, logger hclog.Logger, _ *config.Config) (gpt.Gpt, error) {
+func initGpt(ctx context.Context, logger hclog.Logger, cfg *config.Config) (gpt.Gpt, error) {
 	c := gpt.DefaultConfig()
 	if c == nil {
 		return nil, errors.New("failed to config")
 	}
 
 	c.Logger = logger
+	c.Config = *cfg
 
 	return gpt.New(ctx, c), nil
 }
 
-func runTerm(ctx context.Context, _ hclog.Logger, _term term.Term, _gpt gpt.Gpt) error {
-	if err := _term.Init(ctx, _gpt); err != nil {
+func initTerm(ctx context.Context, logger hclog.Logger, cfg *config.Config, _drive drive.Drive, _gpt gpt.Gpt) (term.Term, error) {
+	c := term.DefaultConfig()
+	if c == nil {
+		return nil, errors.New("failed to config")
+	}
+
+	c.Logger = logger
+	c.Config = *cfg
+
+	return term.New(ctx, c), nil
+}
+
+func runTerm(ctx context.Context, _ hclog.Logger, _term term.Term) error {
+	if err := _term.Init(ctx); err != nil {
 		return errors.New("failed to init")
 	}
 
