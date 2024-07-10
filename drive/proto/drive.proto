@@ -1,0 +1,56 @@
+syntax = "proto3";
+
+option go_package = "github.com/cligpt/shai/drive";
+
+package drive;
+
+service DriveProto {
+  rpc SendModelGenerate (stream ModelGenerateRequest) returns (stream ModelGenerateReply) {}
+  rpc SendModelChat (stream ModelChatRequest) returns (stream ModelChatReply) {}
+}
+
+message ModelGenerateRequest {
+  string model = 1;
+  string prompt = 2;
+  string format = 3;
+  ModelGenerateOption options = 4;
+  string template = 5;
+  string context = 6;
+  bool stream = 7;
+  string keepAlive = 8;
+}
+
+message ModelGenerateOption {
+  float temperature = 1;
+}
+
+message ModelGenerateReply {
+  string model = 1;
+  string createdAt = 2;
+  string response = 3;
+  bool done = 4;
+  repeated int64 context = 5;
+}
+
+message ModelChatRequest {
+  string model = 1;
+  string message = 2;
+  string role = 3;
+  string content = 4;
+  string format = 5;
+  ModelChatOption options = 6;
+  bool stream = 7;
+  string keepAlive = 8;
+}
+
+message ModelChatOption {
+  float temperature = 1;
+}
+
+message ModelChatReply {
+  string model = 1;
+  string createdAt = 2;
+  string response = 3;
+  bool done = 4;
+  repeated int64 context = 5;
+}

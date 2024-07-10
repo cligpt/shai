@@ -54,7 +54,9 @@ Project License can be found [here](LICENSE).
 ## Reference
 
 - [bubbletea](https://github.com/charmbracelet/bubbletea)
+- [dify-dataset-api](https://docs.dify.ai/guides/knowledge-base/maintain-dataset-via-api)
 - [go-basher](https://github.com/progrium/go-basher)
+- [ollama-model-api](https://github.com/ollama/ollama/blob/main/docs/api.md)
 - [shai](https://github.com/jonboh/shai)
 - [survey](https://github.com/AlecAivazis/survey)
 - [warp](https://www.warp.dev/)

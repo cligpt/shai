@@ -16,6 +16,9 @@ clean: go-clean
 lint: go-lint
 .PHONY: lint
 
+proto: go-proto
+.PHONY: proto
+
 test: go-test
 .PHONY: test
 
@@ -33,6 +36,9 @@ go-clean: FORCE
 
 go-lint: FORCE
 	./script/lint.sh
+
+go-proto: FORCE
+	./script/proto.sh
 
 go-test: FORCE
 	./script/test.sh report
