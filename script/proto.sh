@@ -13,7 +13,7 @@
 # export PATH="$PATH:$(go env GOPATH)/bin"
 
 # Build proto
-protoc --go_out=. --go_opt=paths=source_relative --go-grpc_out=. --go-grpc_opt=paths=source_relative ./drive/proto/drive.proto
+protoc --go_out=. --go_opt=paths=source_relative --go-grpc_out=. --go-grpc_opt=paths=source_relative ./drive/rpc/rpc.proto
 
 # Build mock
 # TODO

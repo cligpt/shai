@@ -2,7 +2,7 @@
 // versions:
 // - protoc-gen-go-grpc v1.4.0
 // - protoc             v5.27.2
-// source: drive/proto/drive.proto
+// source: drive/rpc/rpc.proto
 
 package drive
 
@@ -208,5 +208,5 @@ var DriveProto_ServiceDesc = grpc.ServiceDesc{
 			ClientStreams: true,
 		},
 	},
-	Metadata: "drive/proto/drive.proto",
+	Metadata: "drive/rpc/rpc.proto",
 }
