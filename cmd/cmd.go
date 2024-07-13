@@ -15,8 +15,7 @@ import (
 )
 
 const (
-	aiName     = "shai"
-	routineNum = -1
+	aiName = "shai"
 )
 
 var (
