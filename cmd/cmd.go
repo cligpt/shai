@@ -15,12 +15,12 @@ import (
 )
 
 const (
-	logName    = "shai"
+	aiName     = "shai"
 	routineNum = -1
 )
 
 var (
-	app      = kingpin.New("shai", "shell with ai").Version(config.Version + "-build-" + config.Build)
+	app      = kingpin.New(aiName, "shell with ai").Version(config.Version + "-build-" + config.Build)
 	logLevel = app.Flag("log-level", "Log level (DEBUG|INFO|WARN|ERROR)").Default("WARN").String()
 )
 
@@ -61,7 +61,7 @@ func Run(ctx context.Context) error {
 
 func initLogger(_ context.Context, level string) (hclog.Logger, error) {
 	return hclog.New(&hclog.LoggerOptions{
-		Name:  logName,
+		Name:  aiName,
 		Level: hclog.LevelFromString(level),
 	}), nil
 }
