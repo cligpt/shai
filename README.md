@@ -38,9 +38,9 @@ shell with ai
 
 
 Flags:
-  --[no-]help         Show context-sensitive help (also try --help-long and --help-man).
-  --[no-]version      Show application version.
-  --log-level="WARN"  Log level (DEBUG|INFO|WARN|ERROR)
+      --[no-]help         Show context-sensitive help (also try --help-long and --help-man).
+      --[no-]version      Show application version.
+  -l, --log-level="WARN"  Log level (DEBUG|INFO|WARN|ERROR)
 ```
 
 

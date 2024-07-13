@@ -20,7 +20,7 @@ const (
 
 var (
 	app      = kingpin.New(aiName, "shell with ai").Version(config.Version + "-build-" + config.Build)
-	logLevel = app.Flag("log-level", "Log level (DEBUG|INFO|WARN|ERROR)").Default("WARN").String()
+	logLevel = app.Flag("log-level", "Log level (DEBUG|INFO|WARN|ERROR)").Short('l').Default("WARN").String()
 )
 
 func Run(ctx context.Context) error {
