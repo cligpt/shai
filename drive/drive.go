@@ -11,7 +11,7 @@ import (
 	"google.golang.org/grpc/credentials/insecure"
 
 	"github.com/cligpt/shai/config"
-	ai "github.com/cligpt/shai/drive/rpc"
+	rpc "github.com/cligpt/shai/drive/rpc"
 )
 
 type Drive interface {
@@ -27,7 +27,7 @@ type Config struct {
 
 type drive struct {
 	cfg    *Config
-	client ai.AiProtoClient
+	client rpc.AiProtoClient
 	conn   *grpc.ClientConn
 }
 
@@ -54,7 +54,7 @@ func (d *drive) Init(_ context.Context) error {
 		return errors.Wrap(err, "failed to dial")
 	}
 
-	d.client = ai.NewAiProtoClient(d.conn)
+	d.client = rpc.NewAiProtoClient(d.conn)
 
 	return nil
 }
