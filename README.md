@@ -60,7 +60,7 @@ metadata:
 spec:
   drive:
     host: 127.0.0.1
-    port: 65090
+    port: 65050
 ```
 
 
