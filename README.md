@@ -32,15 +32,16 @@ make build
 ## Usage
 
 ```
-usage: shai [<flags>]
-
 shell with ai
 
+Usage:
+  shai [flags]
 
 Flags:
-      --[no-]help         Show context-sensitive help (also try --help-long and --help-man).
-      --[no-]version      Show application version.
-  -l, --log-level="WARN"  Log level (DEBUG|INFO|WARN|ERROR)
+  -f, --config-file string   config file (default "$HOME/.shai/shai.yml")
+  -h, --help                 help for shai
+  -l, --log-level string     log level (DEBUG|INFO|WARN|ERROR) (default "WRAN")
+  -v, --version              version for shai
 ```
 
 

@@ -44,8 +44,8 @@ func DefaultConfig() *Config {
 func (d *drive) Init(_ context.Context) error {
 	var err error
 
-	host := d.cfg.Config.Host
-	port := d.cfg.Config.Port
+	host := d.cfg.Config.Spec.Drive.Host
+	port := d.cfg.Config.Spec.Drive.Port
 
 	d.conn, err = grpc.NewClient(host+":"+strconv.Itoa(port),
 		grpc.WithTransportCredentials(insecure.NewCredentials()),

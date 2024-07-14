@@ -2,11 +2,12 @@ package cmd
 
 import (
 	"context"
-	"os"
 
-	"github.com/alecthomas/kingpin/v2"
 	"github.com/hashicorp/go-hclog"
+	homedir "github.com/mitchellh/go-homedir"
 	"github.com/pkg/errors"
+	"github.com/spf13/cobra"
+	"github.com/spf13/viper"
 
 	"github.com/cligpt/shai/config"
 	"github.com/cligpt/shai/drive"
@@ -19,14 +20,46 @@ const (
 )
 
 var (
-	app      = kingpin.New(aiName, "shell with ai").Version(config.Version + "-build-" + config.Build)
-	logLevel = app.Flag("log-level", "Log level (DEBUG|INFO|WARN|ERROR)").Short('l').Default("WARN").String()
+	configFile string
+	logLevel   string
 )
 
-func Run(ctx context.Context) error {
-	kingpin.MustParse(app.Parse(os.Args[1:]))
+var rootCmd = &cobra.Command{
+	Use:     aiName,
+	Version: config.Version + "-build-" + config.Build,
+	Short:   "shell with ai",
+	Long:    "shell with ai",
+	Run: func(cmd *cobra.Command, args []string) {
+		cobra.CheckErr(loadConfig(context.Background()))
+	},
+}
 
-	logger, err := initLogger(ctx, *logLevel)
+// nolint: gochecknoinits
+func init() {
+	helper := func() {
+		if configFile != "" {
+			viper.SetConfigFile(configFile)
+		} else {
+			home, _ := homedir.Dir()
+			viper.AddConfigPath(home)
+			viper.AddConfigPath(".shai")
+			viper.SetConfigName(aiName)
+			viper.SetConfigType("yml")
+		}
+	}
+
+	cobra.OnInitialize(helper)
+
+	rootCmd.Flags().StringVarP(&configFile, "config-file", "f", "$HOME/.shai/shai.yml", "config file")
+	rootCmd.Flags().StringVarP(&logLevel, "log-level", "l", "WRAN", "log level (DEBUG|INFO|WARN|ERROR)")
+}
+
+func Execute() error {
+	return rootCmd.Execute()
+}
+
+func loadConfig(ctx context.Context) error {
+	logger, err := initLogger(ctx, logLevel)
 	if err != nil {
 		return errors.Wrap(err, "failed to init logger")
 	}
@@ -102,6 +135,8 @@ func initTerm(ctx context.Context, logger hclog.Logger, cfg *config.Config, _dri
 
 	c.Logger = logger
 	c.Config = *cfg
+	c.Drive = _drive
+	c.Gpt = _gpt
 
 	return term.New(ctx, c), nil
 }
