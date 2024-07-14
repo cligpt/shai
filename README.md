@@ -46,6 +46,25 @@ Flags:
 
 
 
+## Settings
+
+*shai* parameters can be set in the directory [config](https://github.com/cligpt/shai/blob/main/config).
+
+An example of configuration in [config.yml](https://github.com/cligpt/shai/blob/main/config/config.yml):
+
+```yaml
+apiVersion: v1
+kind: shai
+metadata:
+  name: shai
+spec:
+  drive:
+    host: 127.0.0.1
+    port: 65090
+```
+
+
+
 ## License
 
 Project License can be found [here](LICENSE).
