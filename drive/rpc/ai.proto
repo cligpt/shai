@@ -10,13 +10,16 @@ service AiProto {
 
 message ChatRequest {
   string model = 1;
-  string message = 2;
-  string role = 3;
-  string content = 4;
-  string format = 5;
-  ChatOption options = 6;
-  bool stream = 7;
-  string keepAlive = 8;
+  repeated ChatMessage messages = 2;
+  string format = 3;
+  ChatOption options = 4;
+  bool stream = 5;
+  string keepAlive = 6;
+}
+
+message ChatMessage {
+  string role = 1;
+  string content = 2;
 }
 
 message ChatOption {
@@ -26,7 +29,6 @@ message ChatOption {
 message ChatReply {
   string model = 1;
   string createdAt = 2;
-  string response = 3;
+  ChatMessage message = 3;
   bool done = 4;
-  repeated int64 context = 5;
 }
