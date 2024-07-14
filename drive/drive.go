@@ -4,6 +4,7 @@ import (
 	"context"
 	"math"
 	"strconv"
+	"time"
 
 	"github.com/hashicorp/go-hclog"
 	"github.com/pkg/errors"
@@ -14,10 +15,14 @@ import (
 	rpc "github.com/cligpt/shai/drive/rpc"
 )
 
+const (
+	upTiemout = "10s"
+)
+
 type Drive interface {
 	Init(context.Context) error
 	Deinit(context.Context) error
-	Run(context.Context) error
+	Run(context.Context, string, string) (string, string, error)
 }
 
 type Config struct {
@@ -41,7 +46,30 @@ func DefaultConfig() *Config {
 	return &Config{}
 }
 
-func (d *drive) Init(_ context.Context) error {
+func (d *drive) Init(ctx context.Context) error {
+	if err := d.initConn(ctx); err != nil {
+		return errors.Wrap(err, "failed to init conn")
+	}
+
+	return nil
+}
+
+func (d *drive) Deinit(ctx context.Context) error {
+	_ = d.deinitConn(ctx)
+
+	return nil
+}
+
+func (d *drive) Run(ctx context.Context, role, content string) (r, c string, e error) {
+	ret, err := d.sendChat(ctx, role, content)
+	if err != nil {
+		return "", "", errors.Wrap(err, "failed to chat")
+	}
+
+	return ret.GetMessage().GetRole(), ret.GetMessage().GetContent(), nil
+}
+
+func (d *drive) initConn(_ context.Context) error {
 	var err error
 
 	host := d.cfg.Config.Spec.Drive.Host
@@ -59,11 +87,42 @@ func (d *drive) Init(_ context.Context) error {
 	return nil
 }
 
-func (d *drive) Deinit(_ context.Context) error {
+func (d *drive) deinitConn(_ context.Context) error {
 	return d.conn.Close()
 }
 
-func (d *drive) Run(_ context.Context) error {
+func (d *drive) sendChat(ctx context.Context, role, content string) (*rpc.ChatReply, error) {
+	ctx, cancel := context.WithTimeout(ctx, d.setTimeout(upTiemout))
+	defer cancel()
+
 	// TBD: FIXME
-	return nil
+	messages := []*rpc.ChatMessage{
+		{
+			Role:    role,
+			Content: content,
+		},
+	}
+
+	reply, err := d.client.SendChat(ctx, &rpc.ChatRequest{
+		Model:    "llama3",
+		Messages: messages,
+		Format:   "json",
+		Options: &rpc.ChatOption{
+			Temperature: 0,
+		},
+		Stream:    false,
+		KeepAlive: "5m",
+	})
+
+	if err != nil {
+		return nil, errors.Wrap(err, "failed to send")
+	}
+
+	return reply, nil
+}
+
+func (d *drive) setTimeout(timeout string) time.Duration {
+	duration, _ := time.ParseDuration(timeout)
+
+	return duration
 }
