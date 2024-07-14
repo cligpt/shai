@@ -32,7 +32,7 @@ type Config struct {
 
 type drive struct {
 	cfg    *Config
-	client rpc.AiProtoClient
+	client rpc.RpcProtoClient
 	conn   *grpc.ClientConn
 }
 
@@ -82,7 +82,7 @@ func (d *drive) initConn(_ context.Context) error {
 		return errors.Wrap(err, "failed to dial")
 	}
 
-	d.client = rpc.NewAiProtoClient(d.conn)
+	d.client = rpc.NewRpcProtoClient(d.conn)
 
 	return nil
 }

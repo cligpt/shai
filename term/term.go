@@ -183,8 +183,10 @@ func (m *model) View() string {
 	if m.choice != "" {
 		return quitTextStyle.Render(fmt.Sprintf("%s selected!🚀", m.choice))
 	}
+
 	if m.quitting {
 		return quitTextStyle.Render("See you next time!💖")
 	}
+
 	return "\n" + m.list.View()
 }

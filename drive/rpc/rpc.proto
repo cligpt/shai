@@ -4,8 +4,9 @@ option go_package = "github.com/cligpt/shai/drive";
 
 package drive;
 
-service AiProto {
+service RpcProto {
   rpc SendChat (ChatRequest) returns (ChatReply) {}
+  rpc SendQuery (QueryRequest) returns (QueryReply) {}
 }
 
 message ChatRequest {
@@ -31,4 +32,17 @@ message ChatReply {
   string createdAt = 2;
   ChatMessage message = 3;
   bool done = 4;
+}
+
+message QueryRequest {
+  string name = 1;
+  string arch = 2;
+  string os = 3;
+}
+
+message QueryReply {
+  string version = 1;
+  string url = 2;
+  string user = 3;
+  string pass = 4;
 }

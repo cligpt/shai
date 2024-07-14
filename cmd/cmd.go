@@ -100,6 +100,15 @@ func initLogger(_ context.Context, level string) (hclog.Logger, error) {
 
 func initConfig(_ context.Context, _ hclog.Logger) (*config.Config, error) {
 	c := config.New()
+
+	if err := viper.ReadInConfig(); err != nil {
+		return nil, errors.Wrap(err, "failed to read config")
+	}
+
+	if err := viper.Unmarshal(c); err != nil {
+		return nil, errors.Wrap(err, "failed to unmarshal config")
+	}
+
 	return c, nil
 }
 
