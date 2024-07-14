@@ -64,5 +64,6 @@ func (d *drive) Deinit(_ context.Context) error {
 }
 
 func (d *drive) Run(_ context.Context) error {
+	// TBD: FIXME
 	return nil
 }

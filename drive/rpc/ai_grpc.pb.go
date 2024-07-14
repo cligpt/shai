@@ -19,16 +19,14 @@ import (
 const _ = grpc.SupportPackageIsVersion8
 
 const (
-	AiProto_SendModelGenerate_FullMethodName = "/drive.AiProto/SendModelGenerate"
-	AiProto_SendModelChat_FullMethodName     = "/drive.AiProto/SendModelChat"
+	AiProto_SendChat_FullMethodName = "/drive.AiProto/SendChat"
 )
 
 // AiProtoClient is the client API for AiProto service.
 //
 // For semantics around ctx use and closing/ending streaming RPCs, please refer to https://pkg.go.dev/google.golang.org/grpc/?tab=doc#ClientConn.NewStream.
 type AiProtoClient interface {
-	SendModelGenerate(ctx context.Context, opts ...grpc.CallOption) (AiProto_SendModelGenerateClient, error)
-	SendModelChat(ctx context.Context, opts ...grpc.CallOption) (AiProto_SendModelChatClient, error)
+	SendChat(ctx context.Context, in *ChatRequest, opts ...grpc.CallOption) (*ChatReply, error)
 }
 
 type aiProtoClient struct {
@@ -39,76 +37,21 @@ func NewAiProtoClient(cc grpc.ClientConnInterface) AiProtoClient {
 	return &aiProtoClient{cc}
 }
 
-func (c *aiProtoClient) SendModelGenerate(ctx context.Context, opts ...grpc.CallOption) (AiProto_SendModelGenerateClient, error) {
+func (c *aiProtoClient) SendChat(ctx context.Context, in *ChatRequest, opts ...grpc.CallOption) (*ChatReply, error) {
 	cOpts := append([]grpc.CallOption{grpc.StaticMethod()}, opts...)
-	stream, err := c.cc.NewStream(ctx, &AiProto_ServiceDesc.Streams[0], AiProto_SendModelGenerate_FullMethodName, cOpts...)
+	out := new(ChatReply)
+	err := c.cc.Invoke(ctx, AiProto_SendChat_FullMethodName, in, out, cOpts...)
 	if err != nil {
 		return nil, err
 	}
-	x := &aiProtoSendModelGenerateClient{ClientStream: stream}
-	return x, nil
-}
-
-type AiProto_SendModelGenerateClient interface {
-	Send(*ModelGenerateRequest) error
-	Recv() (*ModelGenerateReply, error)
-	grpc.ClientStream
-}
-
-type aiProtoSendModelGenerateClient struct {
-	grpc.ClientStream
-}
-
-func (x *aiProtoSendModelGenerateClient) Send(m *ModelGenerateRequest) error {
-	return x.ClientStream.SendMsg(m)
-}
-
-func (x *aiProtoSendModelGenerateClient) Recv() (*ModelGenerateReply, error) {
-	m := new(ModelGenerateReply)
-	if err := x.ClientStream.RecvMsg(m); err != nil {
-		return nil, err
-	}
-	return m, nil
-}
-
-func (c *aiProtoClient) SendModelChat(ctx context.Context, opts ...grpc.CallOption) (AiProto_SendModelChatClient, error) {
-	cOpts := append([]grpc.CallOption{grpc.StaticMethod()}, opts...)
-	stream, err := c.cc.NewStream(ctx, &AiProto_ServiceDesc.Streams[1], AiProto_SendModelChat_FullMethodName, cOpts...)
-	if err != nil {
-		return nil, err
-	}
-	x := &aiProtoSendModelChatClient{ClientStream: stream}
-	return x, nil
-}
-
-type AiProto_SendModelChatClient interface {
-	Send(*ModelChatRequest) error
-	Recv() (*ModelChatReply, error)
-	grpc.ClientStream
-}
-
-type aiProtoSendModelChatClient struct {
-	grpc.ClientStream
-}
-
-func (x *aiProtoSendModelChatClient) Send(m *ModelChatRequest) error {
-	return x.ClientStream.SendMsg(m)
-}
-
-func (x *aiProtoSendModelChatClient) Recv() (*ModelChatReply, error) {
-	m := new(ModelChatReply)
-	if err := x.ClientStream.RecvMsg(m); err != nil {
-		return nil, err
-	}
-	return m, nil
+	return out, nil
 }
 
 // AiProtoServer is the server API for AiProto service.
 // All implementations must embed UnimplementedAiProtoServer
 // for forward compatibility
 type AiProtoServer interface {
-	SendModelGenerate(AiProto_SendModelGenerateServer) error
-	SendModelChat(AiProto_SendModelChatServer) error
+	SendChat(context.Context, *ChatRequest) (*ChatReply, error)
 	mustEmbedUnimplementedAiProtoServer()
 }
 
@@ -116,11 +59,8 @@ type AiProtoServer interface {
 type UnimplementedAiProtoServer struct {
 }
 
-func (UnimplementedAiProtoServer) SendModelGenerate(AiProto_SendModelGenerateServer) error {
-	return status.Errorf(codes.Unimplemented, "method SendModelGenerate not implemented")
-}
-func (UnimplementedAiProtoServer) SendModelChat(AiProto_SendModelChatServer) error {
-	return status.Errorf(codes.Unimplemented, "method SendModelChat not implemented")
+func (UnimplementedAiProtoServer) SendChat(context.Context, *ChatRequest) (*ChatReply, error) {
+	return nil, status.Errorf(codes.Unimplemented, "method SendChat not implemented")
 }
 func (UnimplementedAiProtoServer) mustEmbedUnimplementedAiProtoServer() {}
 
@@ -135,56 +75,22 @@ func RegisterAiProtoServer(s grpc.ServiceRegistrar, srv AiProtoServer) {
 	s.RegisterService(&AiProto_ServiceDesc, srv)
 }
 
-func _AiProto_SendModelGenerate_Handler(srv interface{}, stream grpc.ServerStream) error {
-	return srv.(AiProtoServer).SendModelGenerate(&aiProtoSendModelGenerateServer{ServerStream: stream})
-}
-
-type AiProto_SendModelGenerateServer interface {
-	Send(*ModelGenerateReply) error
-	Recv() (*ModelGenerateRequest, error)
-	grpc.ServerStream
-}
-
-type aiProtoSendModelGenerateServer struct {
-	grpc.ServerStream
-}
-
-func (x *aiProtoSendModelGenerateServer) Send(m *ModelGenerateReply) error {
-	return x.ServerStream.SendMsg(m)
-}
-
-func (x *aiProtoSendModelGenerateServer) Recv() (*ModelGenerateRequest, error) {
-	m := new(ModelGenerateRequest)
-	if err := x.ServerStream.RecvMsg(m); err != nil {
+func _AiProto_SendChat_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
+	in := new(ChatRequest)
+	if err := dec(in); err != nil {
 		return nil, err
 	}
-	return m, nil
-}
-
-func _AiProto_SendModelChat_Handler(srv interface{}, stream grpc.ServerStream) error {
-	return srv.(AiProtoServer).SendModelChat(&aiProtoSendModelChatServer{ServerStream: stream})
-}
-
-type AiProto_SendModelChatServer interface {
-	Send(*ModelChatReply) error
-	Recv() (*ModelChatRequest, error)
-	grpc.ServerStream
-}
-
-type aiProtoSendModelChatServer struct {
-	grpc.ServerStream
-}
-
-func (x *aiProtoSendModelChatServer) Send(m *ModelChatReply) error {
-	return x.ServerStream.SendMsg(m)
-}
-
-func (x *aiProtoSendModelChatServer) Recv() (*ModelChatRequest, error) {
-	m := new(ModelChatRequest)
-	if err := x.ServerStream.RecvMsg(m); err != nil {
-		return nil, err
+	if interceptor == nil {
+		return srv.(AiProtoServer).SendChat(ctx, in)
 	}
-	return m, nil
+	info := &grpc.UnaryServerInfo{
+		Server:     srv,
+		FullMethod: AiProto_SendChat_FullMethodName,
+	}
+	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
+		return srv.(AiProtoServer).SendChat(ctx, req.(*ChatRequest))
+	}
+	return interceptor(ctx, in, info, handler)
 }
 
 // AiProto_ServiceDesc is the grpc.ServiceDesc for AiProto service.
@@ -193,20 +99,12 @@ func (x *aiProtoSendModelChatServer) Recv() (*ModelChatRequest, error) {
 var AiProto_ServiceDesc = grpc.ServiceDesc{
 	ServiceName: "drive.AiProto",
 	HandlerType: (*AiProtoServer)(nil),
-	Methods:     []grpc.MethodDesc{},
-	Streams: []grpc.StreamDesc{
+	Methods: []grpc.MethodDesc{
 		{
-			StreamName:    "SendModelGenerate",
-			Handler:       _AiProto_SendModelGenerate_Handler,
-			ServerStreams: true,
-			ClientStreams: true,
-		},
-		{
-			StreamName:    "SendModelChat",
-			Handler:       _AiProto_SendModelChat_Handler,
-			ServerStreams: true,
-			ClientStreams: true,
+			MethodName: "SendChat",
+			Handler:    _AiProto_SendChat_Handler,
 		},
 	},
+	Streams:  []grpc.StreamDesc{},
 	Metadata: "drive/rpc/ai.proto",
 }
