@@ -10,12 +10,18 @@ service RpcProto {
 }
 
 message ChatRequest {
-  string model = 1;
+  ChatModel model = 1;
   repeated ChatMessage messages = 2;
   string format = 3;
   ChatOption options = 4;
   bool stream = 5;
   string keepAlive = 6;
+}
+
+message ChatModel {
+  string name = 1;
+  string id = 2;
+  string key = 3;
 }
 
 message ChatMessage {
@@ -28,7 +34,7 @@ message ChatOption {
 }
 
 message ChatReply {
-  string model = 1;
+  ChatModel model = 1;
   string createdAt = 2;
   ChatMessage message = 3;
   bool done = 4;

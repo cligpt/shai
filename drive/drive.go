@@ -104,7 +104,11 @@ func (d *drive) sendChat(ctx context.Context, role, content string) (*rpc.ChatRe
 	}
 
 	reply, err := d.client.SendChat(ctx, &rpc.ChatRequest{
-		Model:    "llama3",
+		Model: &rpc.ChatModel{
+			Name: "llama3",
+			Id:   "",
+			Key:  "",
+		},
 		Messages: messages,
 		Format:   "json",
 		Options: &rpc.ChatOption{

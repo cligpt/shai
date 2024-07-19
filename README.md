@@ -75,6 +75,7 @@ Project License can be found [here](LICENSE).
 
 - [bubbletea](https://github.com/charmbracelet/bubbletea)
 - [dify-dataset-api](https://docs.dify.ai/guides/knowledge-base/maintain-dataset-via-api)
+- [dify-model-yaml](https://docs.dify.ai/guides/model-configuration/customizable-model)
 - [go-basher](https://github.com/progrium/go-basher)
 - [ollama-model-api](https://github.com/ollama/ollama/blob/main/docs/api.md)
 - [shai](https://github.com/jonboh/shai)
