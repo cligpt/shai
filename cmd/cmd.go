@@ -4,7 +4,7 @@ import (
 	"context"
 
 	"github.com/hashicorp/go-hclog"
-	homedir "github.com/mitchellh/go-homedir"
+	"github.com/mitchellh/go-homedir"
 	"github.com/pkg/errors"
 	"github.com/spf13/cobra"
 	"github.com/spf13/viper"
