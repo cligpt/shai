@@ -4,6 +4,7 @@ import (
 	"context"
 	"fmt"
 	"io"
+	"os"
 	"strings"
 
 	"github.com/charmbracelet/bubbles/list"
@@ -15,6 +16,8 @@ import (
 	"github.com/cligpt/shai/config"
 	"github.com/cligpt/shai/drive"
 	"github.com/cligpt/shai/gpt"
+	"github.com/cligpt/shai/pkg/metal"
+	"github.com/cligpt/shgpt/metalgpt"
 )
 
 const (
@@ -56,6 +59,7 @@ type model struct {
 	list     list.Model
 	choice   string
 	quitting bool
+	result   string
 }
 
 func New(_ context.Context, cfg *Config) Term {
@@ -169,6 +173,27 @@ func (m *model) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 			i, ok := m.list.SelectedItem().(item)
 			if ok {
 				m.choice = string(i)
+				if m.choice == "artifactgpt" {
+					// TBD
+				} else if m.choice == "gitgpt" {
+					// TBD
+				} else if m.choice == "metalgpt" {
+					var ctx metalgpt.Context
+					var args map[string]string
+					res, err := ctx.Run(args)
+					if err != nil {
+						fmt.Println(err)
+					}
+					p := tea.NewProgram(
+						&metal.MetalGPTModel{Content: metal.AddColor(res.Out)},
+						tea.WithAltScreen(),       // use the full size of the terminal in its "alternate screen buffer"
+						tea.WithMouseCellMotion(), // turn on mouse support so we can track the mouse wheel
+					)
+					if _, err := p.Run(); err != nil {
+						fmt.Println("could not run program:", err)
+						os.Exit(1)
+					}
+				}
 			}
 			return m, tea.Quit
 		}
