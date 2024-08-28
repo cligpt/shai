@@ -81,3 +81,4 @@ Project License can be found [here](LICENSE).
 - [shai](https://github.com/jonboh/shai)
 - [survey](https://github.com/AlecAivazis/survey)
 - [warp](https://www.warp.dev/)
+- [windows-installer](https://gist.github.com/craftslab/2110dae8f84d47123c652defb8383899)
